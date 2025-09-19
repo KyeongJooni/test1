@@ -19,8 +19,8 @@ jobs:
       - name: Extract branch name from issue form
         id: extract
         run: |
-          # "브랜치명 (Branch)" 섹션 바로 다음 줄 추출
-          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | sed -n '/브랜치명 (Branch)/{n;p;}' | xargs)
+          # "Branch" 섹션 바로 다음 줄 추출 → 입력한 값 그대로 사용
+          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | sed -n '/Branch/{n;p;}' | xargs)
 
           if [ -z "$BRANCH_NAME" ]; then
             echo "❌ 브랜치명을 찾을 수 없습니다. 기본값 사용."
@@ -37,7 +37,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 기본 브랜치(main)에서 새 브랜치 생성
+          # 기본 브랜치에서 새 브랜치 생성 (main → 필요 시 master로 변경)
           git checkout main
           git pull origin main
 

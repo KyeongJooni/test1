@@ -9,33 +9,33 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Extract branch name from issue form
-        id: extract
+      - name: 이슈 본문에서 주차 정보 추출
+        id: extract-week
         run: |
-          # "브랜치명 (Branch)" 섹션 바로 다음 줄 추출
-          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | sed -n '/브랜치명 (Branch)/{n;p;}' | xargs)
-
-          if [ -z "$BRANCH_NAME" ]; then
-            echo "❌ 브랜치명을 찾을 수 없습니다. 기본값 사용."
-            BRANCH_NAME="issue-${{ github.event.issue.number }}"
+          WEEK_PATTERN="([0-9]+)주차"
+          if echo "${{ github.event.issue.body }}" | grep -qE "$WEEK_PATTERN"; then
+            WEEK_NUMBER=$(echo "${{ github.event.issue.body }}" | grep -oE "$WEEK_PATTERN" | grep -oE "[0-9]+")
+            echo "week_number=$WEEK_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "week_number=" >> $GITHUB_OUTPUT
           fi
 
-          echo "최종 브랜치명: $BRANCH_NAME"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      - name: Create branch
+      - name: 브랜치 생성
+        if: steps.extract-week.outputs.week_number != ''
         run: |
-          BRANCH_NAME="${{ steps.extract.outputs.branch_name }}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
+          WEEK_NUMBER="${{ steps.extract-week.outputs.week_number }}"
+          BRANCH_NAME="이경준/${WEEK_NUMBER}주차"
+          
+          echo "생성할 브랜치 이름: $BRANCH_NAME"
+          
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          git clone https://github.com/${{ github.repository }}.git
+          cd $(basename ${{ github.repository }})
+          
           git checkout -b "$BRANCH_NAME"
+          git commit --allow-empty -m "이슈 #${{ github.event.issue.number }}을 위한 브랜치 생성: $BRANCH_NAME"
           git push origin "$BRANCH_NAME"

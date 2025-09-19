@@ -19,11 +19,8 @@ jobs:
       - name: Extract branch name from issue form
         id: extract
         run: |
-          echo "이슈 본문:"
-          echo "${{ github.event.issue.body }}"
-
-          # "🌳 브랜치명 (Branch)" 바로 다음 줄 값 추출
-          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | awk '/🌳 브랜치명/{getline; print}' | xargs)
+          # "브랜치명 (Branch)" 섹션 바로 다음 줄 추출
+          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | sed -n '/브랜치명 (Branch)/{n;p;}' | xargs)
 
           if [ -z "$BRANCH_NAME" ]; then
             echo "❌ 브랜치명을 찾을 수 없습니다. 기본값 사용."

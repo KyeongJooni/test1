@@ -22,7 +22,7 @@ jobs:
           echo "이슈 본문:"
           echo "${{ github.event.issue.body }}"
 
-          # "🌳 브랜치명 (Branch)" 섹션 바로 다음 줄을 추출
+          # "🌳 브랜치명 (Branch)" 바로 다음 줄 값 추출
           BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | awk '/🌳 브랜치명/{getline; print}' | xargs)
 
           if [ -z "$BRANCH_NAME" ]; then

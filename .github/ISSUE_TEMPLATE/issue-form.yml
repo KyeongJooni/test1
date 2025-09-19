@@ -7,8 +7,8 @@ body:
     id: branch
     attributes:
       label: '🌳 브랜치명 (Branch)'
-      description: '생성할 브랜치명을 입력해 주세요 (자동으로 mod/ 접두사가 붙습니다)'
-      placeholder: 'feature/login-page'
+      description: '생성할 브랜치명을 입력해 주세요'
+      placeholder: '이경준/{주차번호}주차'
     validations:
       required: true
 

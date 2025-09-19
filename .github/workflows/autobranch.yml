@@ -1,0 +1,44 @@
+name: 자동 브랜치 생성
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Extract branch name from issue form
+        id: extract
+        run: |
+          echo "이슈 본문:"
+          echo "${{ github.event.issue.body }}"
+
+          # "🌳 브랜치명 (Branch)" 섹션 바로 다음 줄을 추출
+          BRANCH_NAME=$(echo "${{ github.event.issue.body }}" | awk '/🌳 브랜치명/{getline; print}' | xargs)
+
+          if [ -z "$BRANCH_NAME" ]; then
+            echo "❌ 브랜치명을 찾을 수 없습니다. 기본값 사용."
+            BRANCH_NAME="issue-${{ github.event.issue.number }}"
+          fi
+
+          echo "최종 브랜치명: $BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create branch
+        run: |
+          BRANCH_NAME="${{ steps.extract.outputs.branch_name }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
